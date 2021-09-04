@@ -8,6 +8,7 @@ import (
 
 type ApiStruct struct {
 	Success     bool   `json:"success"`
+	Error       error
 	Endpoint    string `json:"endpoint"`
 	FormInfo    string `json:"form_info"`
 	Proxy       string `json:"proxy"`
@@ -70,13 +71,13 @@ func (g *Getter) Get(proxy string) chan ApiStruct{
 
 		byteBuffer , err := json.Marshal(data)
 		if err != nil{
-			c <- ApiStruct{Success: false}
+			c <- ApiStruct{Success: false,Error: err}
 			return
 		}
 		body := bytes.NewBuffer(byteBuffer)
 		req, err := http.NewRequest("POST",g.ApiEndpoint,body)
 		if err != nil{
-			c <- ApiStruct{Success: false}
+			c <- ApiStruct{Success: false,Error: err}
 			return
 		}
 		req.Header.Add("Auth",g.AuthToken)
@@ -84,13 +85,13 @@ func (g *Getter) Get(proxy string) chan ApiStruct{
 
 		do, err := g.Do(req)
 		if err != nil{
-			c <- ApiStruct{Success: false}
+			c <- ApiStruct{Success: false,Error: err}
 			return
 		}
 
 		err = json.NewDecoder(do.Body).Decode(&data)
 		if err != nil{
-			c <- ApiStruct{Success: false}
+			c <- ApiStruct{Success: false,Error: err}
 			return
 		}
 		c <- data
