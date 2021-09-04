@@ -75,7 +75,7 @@ func (g *Getter) Get(proxy string) chan ApiStruct{
 			return
 		}
 		body := bytes.NewBuffer(byteBuffer)
-		req, err := http.NewRequest("POST",g.ApiEndpoint,body)
+		req, err := http.NewRequest("POST",g.Endpoint,body)
 		if err != nil{
 			c <- ApiStruct{Success: false,Error: err}
 			return
