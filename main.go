@@ -9,12 +9,19 @@ import (
 type ApiStruct struct {
 	Success     bool   `json:"success"`
 	Error       error
+	Validator   Validator `json:"validator"`
 	Endpoint    string `json:"endpoint"`
 	FormInfo    string `json:"form_info"`
 	Proxy       string `json:"proxy"`
 	UserAgent   string `json:"user_agent"`
 	CookieValue string `json:"cookie"`
 }
+
+type Validator struct {
+	LengthCheck int
+	CharCheck   string
+}
+
 
 
 type Client struct {
@@ -28,6 +35,7 @@ type Getter struct {
 	C chan ApiStruct
 	FormInfo string
 	ApiEndpoint string
+	Validator Validator
 }
 
 func MakeClient(endpoint,token string) (client *Client)  {
@@ -38,7 +46,7 @@ func MakeClient(endpoint,token string) (client *Client)  {
 	}
 }
 
-func MakeGetter(endpoint,token,forminfo,apiEndpoint string) (client *Getter)  {
+func MakeGetter(endpoint,token,forminfo,apiEndpoint string,validator Validator) (client *Getter)  {
 	return &Getter{
 		Client: &Client{
 			Endpoint:  endpoint,
@@ -48,15 +56,17 @@ func MakeGetter(endpoint,token,forminfo,apiEndpoint string) (client *Getter)  {
 		C: make(chan ApiStruct,99999),
 		FormInfo:    forminfo,
 		ApiEndpoint: apiEndpoint,
+		Validator: validator,
 	}
 }
 
-func (C *Client) Set(form,api string) *Getter {
+func (C *Client) Set(form,api string,validator Validator) *Getter {
 	return &Getter{
 		Client: C,
 		FormInfo:    form,
 		ApiEndpoint: api,
 		C: make(chan ApiStruct,99999),
+		Validator: validator,
 	}
 }
 
@@ -68,6 +78,7 @@ func (g *Getter) Get(proxy string) {
 		Proxy:       proxy,
 		UserAgent:   "",
 		CookieValue: "",
+		Validator: g.Validator,
 	}
 
 
