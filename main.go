@@ -7,14 +7,15 @@ import (
 )
 
 type ApiStruct struct {
-	Success     bool   `json:"success"`
+	Success     bool `json:"success"`
 	Error       error
-	Validator   Validator `json:"validator"`
-	Endpoint    string `json:"endpoint"`
-	FormInfo    string `json:"form_info"`
-	Proxy       string `json:"proxy"`
-	UserAgent   string `json:"user_agent"`
-	CookieValue string `json:"cookie"`
+	Endpoint    string     `json:"endpoint"`
+	Validator   Validator  `json:"validator"`
+	FormInfo    string     `json:"form_info"`
+	Proxy       string     `json:"proxy"`
+	UserAgent   string     `json:"user_agent"`
+	CookieValue string     `json:"abck_value"`
+	PixelValue  string	   `json:"pixel_value"`
 }
 
 type Validator struct {
@@ -22,23 +23,21 @@ type Validator struct {
 	CharCheck   string
 }
 
-
-
 type Client struct {
-	Endpoint string
+	Endpoint  string
 	AuthToken string
 	http.Client
 }
 
 type Getter struct {
 	*Client
-	C chan ApiStruct
-	FormInfo string
+	C           chan ApiStruct
+	FormInfo    string
 	ApiEndpoint string
-	Validator Validator
+	Validator   Validator
 }
 
-func MakeClient(endpoint,token string) (client *Client)  {
+func MakeClient(endpoint, token string) (client *Client) {
 	return &Client{
 		Endpoint:  endpoint,
 		AuthToken: token,
@@ -46,27 +45,27 @@ func MakeClient(endpoint,token string) (client *Client)  {
 	}
 }
 
-func MakeGetter(endpoint,token,forminfo,apiEndpoint string,validator Validator) (client *Getter)  {
+func MakeGetter(endpoint, token, forminfo, apiEndpoint string, validator Validator) (client *Getter) {
 	return &Getter{
 		Client: &Client{
 			Endpoint:  endpoint,
 			AuthToken: token,
 			Client:    http.Client{},
 		},
-		C: make(chan ApiStruct,99999),
+		C:           make(chan ApiStruct, 99999),
 		FormInfo:    forminfo,
 		ApiEndpoint: apiEndpoint,
-		Validator: validator,
+		Validator:   validator,
 	}
 }
 
-func (C *Client) Set(form,api string,validator Validator) *Getter {
+func (C *Client) Set(form, api string, validator Validator) *Getter {
 	return &Getter{
-		Client: C,
+		Client:      C,
 		FormInfo:    form,
 		ApiEndpoint: api,
-		C: make(chan ApiStruct,99999),
-		Validator: validator,
+		C:           make(chan ApiStruct, 99999),
+		Validator:   validator,
 	}
 }
 
@@ -78,33 +77,33 @@ func (g *Getter) Get(proxy string) {
 		Proxy:       proxy,
 		UserAgent:   "",
 		CookieValue: "",
-		Validator: g.Validator,
+		Validator:   g.Validator,
 	}
 
+	byteBuffer, err := json.Marshal(data)
 
-	byteBuffer , err := json.Marshal(data)
-	if err != nil{
-		g.C <- ApiStruct{Success: false,Error: err}
+	if err != nil {
+		g.C <- ApiStruct{Success: false, Error: err}
 		return
 	}
 	body := bytes.NewBuffer(byteBuffer)
-	req, err := http.NewRequest("POST",g.Endpoint,body)
-	if err != nil{
-		g.C <- ApiStruct{Success: false,Error: err}
+	req, err := http.NewRequest("POST", g.Endpoint, body)
+	if err != nil {
+		g.C <- ApiStruct{Success: false, Error: err}
 		return
 	}
-	req.Header.Add("Auth",g.AuthToken)
 
+	req.Header.Add("Auth", g.AuthToken)
 
 	do, err := g.Do(req)
-	if err != nil{
-		g.C <- ApiStruct{Success: false,Error: err}
+	if err != nil {
+		g.C <- ApiStruct{Success: false, Error: err}
 		return
 	}
 
 	err = json.NewDecoder(do.Body).Decode(&data)
-	if err != nil{
-		g.C <- ApiStruct{Success: false,Error: err}
+	if err != nil {
+		g.C <- ApiStruct{Success: false, Error: err}
 		return
 	}
 	g.C <- data
