@@ -19,8 +19,8 @@ type ApiStruct struct {
 }
 
 type Validator struct {
-	LengthCheck int
-	CharCheck   string
+	LengthCheck int `json:"length_check"`
+	CharCheck   string `json:"char_check"`
 }
 
 type Client struct {
