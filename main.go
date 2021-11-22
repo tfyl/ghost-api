@@ -16,7 +16,9 @@ type ApiStruct struct {
 	UserAgent   string     `json:"user_agent"`
 	CookieValue string     `json:"abck_value"`
 	PixelValue  string	   `json:"pixel_value"`
+	BmSz        string     `json:"bm_sz"`
 }
+
 
 type Validator struct {
 	LengthCheck int `json:"length_check"`
